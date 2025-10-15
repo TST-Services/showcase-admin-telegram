@@ -11,6 +11,7 @@ export default function TopicCreateForm({
 }) {
   const router = useRouter();
   const [title, setTitle] = useState("");
+  const [priority, setPriority] = useState(0);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -32,7 +33,7 @@ export default function TopicCreateForm({
     setLoading(true);
 
     try {
-      const result = await createTopic(showcaseId, title);
+      const result = await createTopic(showcaseId, { title, priority });
       const { default: WebApp } = await import("@twa-dev/sdk");
 
       if (result.success) {

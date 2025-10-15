@@ -41,6 +41,26 @@ export async function deleteTopic(id: string) {
   }
 }
 
+export async function updateTopic(
+  id: string,
+  data: { title: string; priority?: number }
+) {
+  try {
+    const topic = await prisma.showcaseTopic.update({
+      where: { id },
+      data: {
+        title: data.title,
+        priority: data.priority !== undefined ? data.priority : 0,
+      },
+    });
+    revalidatePath(`/topic/${id}`);
+    return { success: true, topic };
+  } catch (error) {
+    console.error("Error updating topic:", error);
+    return { success: false, error: "Failed to update topic" };
+  }
+}
+
 export async function getTopicCategories(topicId: string) {
   try {
     console.log("Fetching categories for topic:", topicId);

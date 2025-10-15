@@ -115,11 +115,15 @@ export async function getShowcaseTopics(showcaseId: string) {
   }
 }
 
-export async function createTopic(showcaseId: string, title: string) {
+export async function createTopic(
+  showcaseId: string,
+  data: { title: string; priority?: number }
+) {
   try {
     const topic = await prisma.showcaseTopic.create({
       data: {
-        title,
+        title: data.title,
+        priority: data.priority || 0,
         showcaseId,
       },
     });

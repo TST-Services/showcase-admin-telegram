@@ -46,6 +46,7 @@ model ShowcaseTopic {
   id         String    @id @default(uuid()) @db.Uuid
   showcaseId String    @map("showcase_id") @db.Uuid
   title      String    @db.VarChar(200)
+  priority   Int       @default(0)
 
   // Связи
   showcase   Showcase  @relation(fields: [showcaseId], references: [id], onDelete: Cascade)
