@@ -7,6 +7,7 @@ export async function createCategory(
   topicId: string,
   data: {
     title: string;
+    subtitle?: string;
     description?: string;
     iconUrl?: string;
   }
@@ -15,6 +16,7 @@ export async function createCategory(
     const category = await prisma.showcaseCategory.create({
       data: {
         title: data.title,
+        subtitle: data.subtitle || null,
         description: data.description || null,
         imgUrl: data.iconUrl || null,
         topicId,
@@ -44,6 +46,7 @@ export async function updateCategory(
   id: string,
   data: {
     title: string;
+    subtitle?: string;
     description?: string;
     iconUrl?: string;
   }
@@ -53,6 +56,7 @@ export async function updateCategory(
       where: { id },
       data: {
         title: data.title,
+        subtitle: data.subtitle || null,
         description: data.description || null,
         imgUrl: data.iconUrl || null,
       },

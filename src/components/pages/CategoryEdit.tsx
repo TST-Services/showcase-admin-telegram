@@ -18,6 +18,7 @@ export default function CategoryEditForm({
   const router = useRouter();
   const [formData, setFormData] = useState({
     title: "",
+    subtitle: "",
     description: "",
     iconUrl: "",
   });
@@ -32,6 +33,7 @@ export default function CategoryEditForm({
       }
       setFormData({
         title: category.title,
+        subtitle: category.subtitle || "",
         description: category.description || "",
         iconUrl: category.imgUrl || "",
       });
@@ -123,6 +125,21 @@ export default function CategoryEditForm({
               className="w-full px-4 py-3 rounded-lg bg-[var(--tg-theme-section-bg-color)] text-[var(--tg-theme-text-color)] border border-[var(--tg-theme-secondary-bg-color)] focus:outline-none focus:border-[var(--tg-theme-button-color)]"
               placeholder="Например: Кредиты"
               required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-[var(--tg-theme-hint-color)] mb-2">
+              Подзаголовок
+            </label>
+            <input
+              type="text"
+              value={formData.subtitle}
+              onChange={(e) =>
+                setFormData({ ...formData, subtitle: e.target.value })
+              }
+              className="w-full px-4 py-3 rounded-lg bg-[var(--tg-theme-section-bg-color)] text-[var(--tg-theme-text-color)] border border-[var(--tg-theme-secondary-bg-color)] focus:outline-none focus:border-[var(--tg-theme-button-color)]"
+              placeholder="Краткий подзаголовок"
             />
           </div>
 
