@@ -57,6 +57,7 @@ export async function updateShowcase(
   id: string,
   data: {
     name: string;
+    uniqueName: string;
     description?: string;
     template: "BANK" | "SHOP";
     primaryColor: string;
@@ -66,9 +67,17 @@ export async function updateShowcase(
   try {
     const showcase = await prisma.showcase.update({
       where: { id },
-      data,
+      data: {
+        name: data.name,
+        uniqueName: data.uniqueName,
+        description: data.description || null,
+        template: data.template,
+        primaryColor: data.primaryColor,
+        logoUrl: data.logoUrl,
+      },
     });
     revalidatePath(`/showcase/${id}`);
+    revalidatePath("/");
     return { success: true, showcase };
   } catch (error) {
     console.error("Error updating showcase:", error);

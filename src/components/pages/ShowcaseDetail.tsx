@@ -35,6 +35,7 @@ export default function ShowcaseDetailPage({
   const [topics, setTopics] = useState<Topic[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"topics" | "settings">("topics");
+  const [showcaseDomain, setShowcaseDomain] = useState("");
 
   useEffect(() => {
     import("@twa-dev/sdk").then((module) => {
@@ -61,6 +62,11 @@ export default function ShowcaseDetailPage({
 
       setShowcase(showcaseData);
       setTopics(topicsData);
+
+      // Получаем SHOWCASE_DOMAIN
+      const response = await fetch("/api/config");
+      const config = await response.json();
+      setShowcaseDomain(config.showcaseDomain || "");
     } catch (error) {
       console.error("Failed to load data:", error);
       import("@twa-dev/sdk").then((module) => {
@@ -68,6 +74,22 @@ export default function ShowcaseDetailPage({
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleCopyShowcaseLink = async () => {
+    if (!showcase || !showcaseDomain) return;
+
+    const showcaseUrl = `https://${showcaseDomain}/${showcase.uniqueName}`;
+
+    try {
+      await navigator.clipboard.writeText(showcaseUrl);
+      const { default: WebApp } = await import("@twa-dev/sdk");
+      WebApp.showAlert("Ссылка скопирована!");
+    } catch (error) {
+      console.error("Failed to copy link:", error);
+      const { default: WebApp } = await import("@twa-dev/sdk");
+      WebApp.showAlert(`Ссылка: ${showcaseUrl}`);
     }
   };
 
@@ -273,11 +295,20 @@ export default function ShowcaseDetailPage({
               </div>
             </div>
 
+            {showcaseDomain && (
+              <button
+                onClick={handleCopyShowcaseLink}
+                className="w-full bg-[var(--tg-theme-button-color)] text-[var(--tg-theme-button-text-color)] text-center font-semibold py-3 px-6 rounded-xl hover:opacity-90 transition-opacity"
+              >
+                📋 Скопировать ссылку на витрину
+              </button>
+            )}
+
             <Link
               href={`/showcase/${showcaseId}/edit`}
-              className="block bg-[var(--tg-theme-button-color)] text-[var(--tg-theme-button-text-color)] text-center font-semibold py-3 px-6 rounded-xl hover:opacity-90 transition-opacity"
+              className="block bg-[var(--tg-theme-section-bg-color)] text-[var(--tg-theme-text-color)] text-center font-semibold py-3 px-6 rounded-xl hover:opacity-80 transition-opacity border border-[var(--tg-theme-secondary-bg-color)]"
             >
-              Редактировать витрину
+              ✏️ Редактировать витрину
             </Link>
 
             <button

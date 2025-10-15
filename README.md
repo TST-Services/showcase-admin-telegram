@@ -39,6 +39,8 @@ npm install
 ```env
 DATABASE_URL="postgresql://user:password@localhost:5432/banki_showcase"
 TELEGRAM_BOT_TOKEN="your_bot_token_here"
+IMGBB_API_KEY="your_imgbb_api_key_here"
+SHOWCASE_DOMAIN="your-showcase-domain.com"
 ```
 
 3. Примените миграции базы данных:
