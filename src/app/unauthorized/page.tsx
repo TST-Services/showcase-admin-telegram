@@ -1,9 +1,42 @@
 "use client";
 
+import { useState, useEffect } from "react";
+
 export default function UnauthorizedPage() {
+  const [telegramId, setTelegramId] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Получаем Telegram ID пользователя
+    import("@twa-dev/sdk")
+      .then((module) => {
+        const WebApp = module.default;
+        const userId = WebApp.initDataUnsafe?.user?.id;
+        if (userId) {
+          setTelegramId(userId.toString());
+        }
+      })
+      .catch((error) => {
+        console.error("Failed to get Telegram user ID:", error);
+      });
+  }, []);
+
   const handleClose = async () => {
     const { default: WebApp } = await import("@twa-dev/sdk");
     WebApp.close();
+  };
+
+  const handleCopyId = async () => {
+    if (!telegramId) return;
+
+    try {
+      await navigator.clipboard.writeText(telegramId);
+      const { default: WebApp } = await import("@twa-dev/sdk");
+      WebApp.showAlert("ID скопирован в буфер обмена!");
+    } catch (error) {
+      console.error("Failed to copy ID:", error);
+      const { default: WebApp } = await import("@twa-dev/sdk");
+      WebApp.showAlert(`Ваш Telegram ID: ${telegramId}`);
+    }
   };
 
   return (
@@ -34,6 +67,23 @@ export default function UnauthorizedPage() {
             У вас нет доступа к этому приложению. Обратитесь к администратору
             для получения доступа.
           </p>
+
+          {telegramId && (
+            <div className="mb-6 bg-[var(--tg-theme-bg-color)] rounded-xl p-4">
+              <p className="text-sm text-[var(--tg-theme-hint-color)] mb-2">
+                Ваш Telegram ID:
+              </p>
+              <p className="text-lg font-mono font-semibold text-[var(--tg-theme-text-color)] mb-3">
+                {telegramId}
+              </p>
+              <button
+                onClick={handleCopyId}
+                className="w-full bg-[var(--tg-theme-section-bg-color)] text-[var(--tg-theme-text-color)] font-medium py-2 px-4 rounded-lg hover:opacity-80 transition-opacity border border-[var(--tg-theme-secondary-bg-color)]"
+              >
+                📋 Скопировать ID
+              </button>
+            </div>
+          )}
 
           <button
             onClick={handleClose}
