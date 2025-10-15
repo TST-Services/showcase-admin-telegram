@@ -1,0 +1,95 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         String   @id @default(uuid()) @db.Uuid
+  telegramId BigInt   @unique @map("telegram_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@map("users")
+}
+
+// Значения в БД хранятся в нижнем регистре ("bank" / "shop")
+enum ShowcaseTemplate {
+  BANK @map("BANK")
+  SHOP @map("SHOP")
+}
+
+model Showcase {
+  id           String            @id @default(uuid()) @db.Uuid
+  name         String            @db.VarChar(200)
+  uniqueName   String            @unique @map("unique_name") @db.VarChar(100)
+  description  String?           @db.Text
+  template     ShowcaseTemplate  @default(BANK)
+  primaryColor String            @map("primary_color") @db.VarChar(7)
+  logoUrl      String            @map("logo_url") @db.VarChar(500)
+  createdAt    DateTime          @default(now()) @map("created_at")
+  updatedAt    DateTime          @updatedAt @map("updated_at")
+
+  // Связи
+  products ShowcaseProduct[]
+  topics   ShowcaseTopic[]
+
+  @@map("showcases")
+}
+
+model ShowcaseTopic {
+  id         String    @id @default(uuid()) @db.Uuid
+  showcaseId String    @map("showcase_id") @db.Uuid
+  title      String    @db.VarChar(200)
+
+  // Связи
+  showcase   Showcase  @relation(fields: [showcaseId], references: [id], onDelete: Cascade)
+  categories ShowcaseCategory[]
+
+  @@index([showcaseId])
+  @@unique([showcaseId, title], map: "showcaseTopic_showcaseId_title")
+  @@map("showcase_topics")
+}
+
+model ShowcaseCategory {
+  id          String   @id @default(uuid()) @db.Uuid
+  topicId     String   @map("topic_id") @db.Uuid
+  title       String   @db.VarChar(200)
+  subtitle    String?  @db.VarChar(300)
+  description String?  @db.Text
+  imgUrl      String?  @map("img_url") @db.VarChar(500)
+
+  // Связи
+  topic    ShowcaseTopic  @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  products ShowcaseProduct[]
+
+  @@index([topicId])
+  @@unique([topicId, title], map: "showcaseCategory_topicId_title")
+  @@map("showcase_categories")
+}
+
+model ShowcaseProduct {
+  id          String   @id @default(uuid()) @db.Uuid
+  showcaseId  String   @map("showcase_id") @db.Uuid
+  categoryId  String   @map("category_id") @db.Uuid
+  title       String   @db.VarChar(200)
+  description String   @db.Text
+  icon        String   @db.VarChar(500)
+  link        String   @db.VarChar(500)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Связи
+  showcase Showcase        @relation(fields: [showcaseId], references: [id], onDelete: Cascade)
+  category ShowcaseCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@index([showcaseId])
+  @@index([categoryId])
+  @@unique([showcaseId, title], map: "showcaseProduct_showcaseId_title")
+  @@map("showcase_products")
+}

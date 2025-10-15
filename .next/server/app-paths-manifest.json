@@ -1,0 +1,6 @@
+{
+  "/page": "app/page.js",
+  "/showcase/[id]/page": "app/showcase/[id]/page.js",
+  "/unauthorized/page": "app/unauthorized/page.js",
+  "/showcase/[id]/topic/create/page": "app/showcase/[id]/topic/create/page.js"
+}
