@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { getProduct, updateProduct } from "@/lib/actions/products";
 import ImageUpload from "@/components/ui/ImageUpload";
-import type { ShowcaseProduct } from "@prisma/client";
 
 export default function ProductEditForm({
   showcaseId,

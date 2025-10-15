@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { getCategory, updateCategory } from "@/lib/actions/categories";
 import ImageUpload from "@/components/ui/ImageUpload";
-import type { ShowcaseCategory } from "@prisma/client";
 
 export default function CategoryEditForm({
   showcaseId,

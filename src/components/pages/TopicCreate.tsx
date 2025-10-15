@@ -74,6 +74,23 @@ export default function TopicCreateForm({
           />
         </div>
 
+        <div className="bg-[var(--tg-theme-section-bg-color)] rounded-xl p-4">
+          <label className="block text-sm text-[var(--tg-theme-section-header-text-color)] mb-2">
+            Приоритет
+          </label>
+          <input
+            type="number"
+            value={priority}
+            onChange={(e) => setPriority(parseInt(e.target.value) || 0)}
+            placeholder="0"
+            min="0"
+            className="w-full bg-[var(--tg-theme-bg-color)] text-[var(--tg-theme-text-color)] px-4 py-2 rounded-lg border border-[var(--tg-theme-secondary-bg-color)] focus:outline-none focus:border-[var(--tg-theme-button-color)]"
+          />
+          <p className="text-xs text-[var(--tg-theme-hint-color)] mt-1">
+            Чем выше приоритет, тем выше топик в списке
+          </p>
+        </div>
+
         <button
           type="submit"
           disabled={loading}

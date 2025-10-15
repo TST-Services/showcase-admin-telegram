@@ -52,7 +52,7 @@ export async function createProduct(
     });
     revalidatePath(`/category/${categoryId}`);
     return { success: true, product };
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error creating product:", error);
     return { success: false, error: "Failed to create product" };
   }

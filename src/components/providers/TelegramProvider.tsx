@@ -14,6 +14,7 @@ export default function TelegramProvider({
 }) {
   const [isReady, setIsReady] = useState(false);
   const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [WebApp, setWebApp] = useState<any>(null);
   const router = useRouter();
 

@@ -23,6 +23,7 @@ export function SafeAreaBottom({ className = "" }: { className?: string }) {
 /**
  * Утилита для добавления padding с учетом safe area
  */
+// eslint-disable-next-line react-refresh/only-export-components
 export const safeAreaClasses = {
   paddingTop: "pt-[var(--tg-safe-area-inset-top)]",
   paddingBottom: "pb-[var(--tg-safe-area-inset-bottom)]",
@@ -35,4 +36,3 @@ export const safeAreaClasses = {
   padding:
     "pt-[var(--tg-safe-area-inset-top)] pb-[var(--tg-safe-area-inset-bottom)] pl-[var(--tg-safe-area-inset-left)] pr-[var(--tg-safe-area-inset-right)]",
 };
-

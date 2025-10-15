@@ -178,6 +178,16 @@ export default function TopicDetailForm({
           )}
         </div>
 
+        {/* Settings */}
+        <div className="space-y-3 mb-6">
+          <Link
+            href={`/showcase/${showcaseId}/topic/${topicId}/edit`}
+            className="block bg-[var(--tg-theme-section-bg-color)] text-[var(--tg-theme-text-color)] text-center font-semibold py-3 px-6 rounded-xl hover:opacity-80 transition-opacity border border-[var(--tg-theme-secondary-bg-color)]"
+          >
+            ✏️ Редактировать топик
+          </Link>
+        </div>
+
         {/* Danger Zone */}
         <div className="bg-[var(--tg-theme-section-bg-color)] rounded-xl p-4">
           <h3 className="text-sm font-medium text-[var(--tg-theme-section-header-text-color)] mb-3">

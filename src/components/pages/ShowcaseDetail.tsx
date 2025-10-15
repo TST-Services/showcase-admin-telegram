@@ -51,6 +51,7 @@ export default function ShowcaseDetailPage({
         module.default.BackButton.hide();
       });
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showcaseId, router]);
 
   const loadData = async () => {

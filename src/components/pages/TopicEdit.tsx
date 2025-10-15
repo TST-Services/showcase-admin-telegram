@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { getTopic, updateTopic } from "@/lib/actions/topics";
-import type { ShowcaseTopic } from "@prisma/client";
 
 export default function TopicEditForm({
   showcaseId,

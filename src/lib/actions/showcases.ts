@@ -41,9 +41,14 @@ export async function createShowcase(data: {
     });
     revalidatePath("/");
     return { success: true, showcase };
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error creating showcase:", error);
-    if (error.code === "P2002") {
+    if (
+      error &&
+      typeof error === "object" &&
+      "code" in error &&
+      error.code === "P2002"
+    ) {
       return {
         success: false,
         error: "Витрина с таким уникальным именем уже существует",
@@ -129,9 +134,14 @@ export async function createTopic(
     });
     revalidatePath(`/showcase/${showcaseId}`);
     return { success: true, topic };
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error creating topic:", error);
-    if (error.code === "P2002") {
+    if (
+      error &&
+      typeof error === "object" &&
+      "code" in error &&
+      error.code === "P2002"
+    ) {
       return {
         success: false,
         error: "Топик с таким названием уже существует в этой витрине",

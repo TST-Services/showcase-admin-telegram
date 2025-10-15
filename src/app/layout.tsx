@@ -1,11 +1,13 @@
 import type { Metadata, Viewport } from "next";
 import "@/index.css";
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const metadata: Metadata = {
   title: "Banki Showcase Admin",
   description: "Админка для онлайн витрин",
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,

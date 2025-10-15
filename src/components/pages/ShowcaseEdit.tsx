@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { getShowcase, updateShowcase } from "@/lib/actions/showcases";
 import ImageUpload from "@/components/ui/ImageUpload";
-import type { Showcase } from "@prisma/client";
 
 export default function ShowcaseEditForm({
   showcaseId,
