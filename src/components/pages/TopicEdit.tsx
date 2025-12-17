@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { getTopic, updateTopic } from "@/lib/actions/topics";
+import { useTelegramBackButton } from "@/lib/hooks/useTelegramBackButton";
 
 export default function TopicEditForm({
   showcaseId,
@@ -17,40 +18,25 @@ export default function TopicEditForm({
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
 
+  useTelegramBackButton(`/showcase/${showcaseId}/topic/${topicId}`);
+
   const loadTopic = useCallback(async () => {
     try {
       const topic = await getTopic(topicId);
-      if (!topic) {
-        throw new Error("Topic not found");
-      }
+      if (!topic) throw new Error("Not found");
       setTitle(topic.title);
       setPriority(topic.priority);
-    } catch (error) {
-      console.error("Failed to load topic:", error);
+    } catch {
       const { default: WebApp } = await import("@twa-dev/sdk");
-      WebApp.showAlert("Ошибка загрузки топика");
+      WebApp.showAlert("Ошибка загрузки");
     } finally {
       setInitialLoading(false);
     }
   }, [topicId]);
 
   useEffect(() => {
-    import("@twa-dev/sdk").then((module) => {
-      const WebApp = module.default;
-      WebApp.BackButton.show();
-      WebApp.BackButton.onClick(() =>
-        router.push(`/showcase/${showcaseId}/topic/${topicId}`)
-      );
-    });
-
     loadTopic();
-
-    return () => {
-      import("@twa-dev/sdk").then((module) => {
-        module.default.BackButton.hide();
-      });
-    };
-  }, [showcaseId, topicId, router, loadTopic]);
+  }, [loadTopic]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,15 +47,14 @@ export default function TopicEditForm({
       const { default: WebApp } = await import("@twa-dev/sdk");
 
       if (result.success) {
-        WebApp.showAlert("Топик успешно обновлён!");
+        WebApp.showAlert("Сохранено!");
         router.push(`/showcase/${showcaseId}/topic/${topicId}`);
       } else {
-        WebApp.showAlert(result.error || "Ошибка обновления топика");
+        WebApp.showAlert(result.error || "Ошибка сохранения");
       }
-    } catch (error) {
-      console.error("Failed to update topic:", error);
+    } catch {
       const { default: WebApp } = await import("@twa-dev/sdk");
-      WebApp.showAlert("Ошибка обновления топика");
+      WebApp.showAlert("Ошибка сохранения");
     } finally {
       setLoading(false);
     }
@@ -77,10 +62,10 @@ export default function TopicEditForm({
 
   if (initialLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center min-h-screen bg-[var(--tg-theme-bg-color)]">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--tg-theme-button-color)] mx-auto"></div>
-          <p className="mt-4 text-[var(--tg-theme-hint-color)]">Загрузка...</p>
+          <div className="animate-spin rounded-full h-10 w-10 border-2 border-[var(--tg-theme-button-color)] border-t-transparent mx-auto" />
+          <p className="mt-3 text-sm text-[var(--tg-theme-hint-color)]">Загрузка...</p>
         </div>
       </div>
     );
@@ -88,53 +73,42 @@ export default function TopicEditForm({
 
   return (
     <div className="min-h-screen bg-[var(--tg-theme-bg-color)]">
-      <div className="sticky top-0 bg-[var(--tg-theme-header-bg-color)] border-b border-[var(--tg-theme-secondary-bg-color)] px-4 py-3 z-10">
-        <h1 className="text-xl font-semibold text-[var(--tg-theme-text-color)]">
+      <div className="sticky top-0 bg-[var(--tg-theme-bg-color)] border-b border-[var(--tg-theme-secondary-bg-color)] px-4 pb-3 z-10 tg-header-padding">
+        <h1 className="text-lg font-semibold text-[var(--tg-theme-text-color)] pt-3">
           Редактировать топик
         </h1>
       </div>
 
-      <form onSubmit={handleSubmit} className="p-4">
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-[var(--tg-theme-hint-color)] mb-2">
-              Название
-            </label>
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-4 py-3 rounded-lg bg-[var(--tg-theme-section-bg-color)] text-[var(--tg-theme-text-color)] border border-[var(--tg-theme-secondary-bg-color)] focus:outline-none focus:border-[var(--tg-theme-button-color)]"
-              placeholder="Например: Кредиты"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-[var(--tg-theme-hint-color)] mb-2">
-              Приоритет
-            </label>
-            <input
-              type="number"
-              value={priority}
-              onChange={(e) => setPriority(parseInt(e.target.value) || 0)}
-              className="w-full px-4 py-3 rounded-lg bg-[var(--tg-theme-section-bg-color)] text-[var(--tg-theme-text-color)] border border-[var(--tg-theme-secondary-bg-color)] focus:outline-none focus:border-[var(--tg-theme-button-color)]"
-              placeholder="0"
-              min="0"
-            />
-            <p className="text-xs text-[var(--tg-theme-hint-color)] mt-1">
-              Чем выше приоритет, тем выше топик в списке
-            </p>
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-3 px-4 rounded-lg bg-[var(--tg-theme-button-color)] text-[var(--tg-theme-button-text-color)] font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
-          >
-            {loading ? "Сохранение..." : "Сохранить изменения"}
-          </button>
+      <form onSubmit={handleSubmit} className="p-4 space-y-3">
+        <div className="bg-[var(--tg-theme-section-bg-color)] rounded-xl p-3">
+          <label className="block text-xs text-[var(--tg-theme-hint-color)] mb-1.5">Название</label>
+          <input
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            required
+            className="w-full bg-[var(--tg-theme-bg-color)] text-[var(--tg-theme-text-color)] px-3 py-2 rounded-lg text-sm focus:outline-none"
+          />
         </div>
+
+        <div className="bg-[var(--tg-theme-section-bg-color)] rounded-xl p-3">
+          <label className="block text-xs text-[var(--tg-theme-hint-color)] mb-1.5">Приоритет</label>
+          <input
+            type="number"
+            value={priority}
+            onChange={(e) => setPriority(parseInt(e.target.value) || 0)}
+            min="0"
+            className="w-full bg-[var(--tg-theme-bg-color)] text-[var(--tg-theme-text-color)] px-3 py-2 rounded-lg text-sm focus:outline-none"
+          />
+        </div>
+
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full bg-[var(--tg-theme-button-color)] text-[var(--tg-theme-button-text-color)] font-medium py-3 rounded-xl text-sm active:opacity-70 disabled:opacity-50"
+        >
+          {loading ? "Сохранение..." : "Сохранить"}
+        </button>
       </form>
     </div>
   );

@@ -3,33 +3,30 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import {
-  getShowcase,
-  getShowcaseTopics,
-  deleteShowcase,
-} from "@/lib/actions/showcases";
+import { getShowcase, getShowcaseTopics, deleteShowcase } from "@/lib/actions/showcases";
+import { useTelegramBackButton } from "@/lib/hooks/useTelegramBackButton";
 
 interface Showcase {
   id: string;
   name: string;
   uniqueName: string;
-  description?: string | null;
-  template: string;
+  description: string | null;
+  template: "BANK" | "SHOP";
   primaryColor: string;
   logoUrl: string;
+  categoriesEnabled: boolean;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 interface Topic {
   id: string;
   title: string;
-  _count?: { categories: number };
+  priority: number;
+  _count?: { categories: number; products: number };
 }
 
-export default function ShowcaseDetailPage({
-  showcaseId,
-}: {
-  showcaseId: string;
-}) {
+export default function ShowcaseDetailPage({ showcaseId }: { showcaseId: string }) {
   const router = useRouter();
   const [showcase, setShowcase] = useState<Showcase | null>(null);
   const [topics, setTopics] = useState<Topic[]>([]);
@@ -37,22 +34,11 @@ export default function ShowcaseDetailPage({
   const [activeTab, setActiveTab] = useState<"topics" | "settings">("topics");
   const [showcaseDomain, setShowcaseDomain] = useState("");
 
+  useTelegramBackButton("/");
+
   useEffect(() => {
-    import("@twa-dev/sdk").then((module) => {
-      const WebApp = module.default;
-      WebApp.BackButton.show();
-      WebApp.BackButton.onClick(() => router.push("/"));
-    });
-
     loadData();
-
-    return () => {
-      import("@twa-dev/sdk").then((module) => {
-        module.default.BackButton.hide();
-      });
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showcaseId, router]);
+  }, [showcaseId]);
 
   const loadData = async () => {
     try {
@@ -64,15 +50,12 @@ export default function ShowcaseDetailPage({
       setShowcase(showcaseData);
       setTopics(topicsData);
 
-      // Получаем SHOWCASE_DOMAIN
       const response = await fetch("/api/config");
       const config = await response.json();
       setShowcaseDomain(config.showcaseDomain || "");
     } catch (error) {
       console.error("Failed to load data:", error);
-      import("@twa-dev/sdk").then((module) => {
-        module.default.showAlert("Ошибка загрузки данных");
-      });
+      // Не показываем alert — просто логируем ошибку
     } finally {
       setLoading(false);
     }
@@ -80,15 +63,13 @@ export default function ShowcaseDetailPage({
 
   const handleCopyShowcaseLink = async () => {
     if (!showcase || !showcaseDomain) return;
-
     const showcaseUrl = `https://${showcaseDomain}/${showcase.uniqueName}`;
 
     try {
       await navigator.clipboard.writeText(showcaseUrl);
       const { default: WebApp } = await import("@twa-dev/sdk");
       WebApp.showAlert("Ссылка скопирована!");
-    } catch (error) {
-      console.error("Failed to copy link:", error);
+    } catch {
       const { default: WebApp } = await import("@twa-dev/sdk");
       WebApp.showAlert(`Ссылка: ${showcaseUrl}`);
     }
@@ -96,29 +77,25 @@ export default function ShowcaseDetailPage({
 
   const handleDeleteShowcase = async () => {
     const { default: WebApp } = await import("@twa-dev/sdk");
-
-    WebApp.showConfirm(
-      "Вы уверены, что хотите удалить эту витрину?",
-      async (confirmed) => {
-        if (confirmed) {
-          const result = await deleteShowcase(showcaseId);
-          if (result.success) {
-            WebApp.showAlert("Витрина успешно удалена");
-            router.push("/");
-          } else {
-            WebApp.showAlert("Ошибка удаления витрины");
-          }
+    WebApp.showConfirm("Удалить витрину? Это действие нельзя отменить.", async (confirmed) => {
+      if (confirmed) {
+        const result = await deleteShowcase(showcaseId);
+        if (result.success) {
+          WebApp.showAlert("Витрина удалена");
+          router.push("/");
+        } else {
+          WebApp.showAlert("Ошибка удаления");
         }
       }
-    );
+    });
   };
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center min-h-screen bg-[var(--tg-theme-bg-color)]">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--tg-theme-button-color)] mx-auto"></div>
-          <p className="mt-4 text-[var(--tg-theme-hint-color)]">Загрузка...</p>
+          <div className="animate-spin rounded-full h-10 w-10 border-2 border-[var(--tg-theme-button-color)] border-t-transparent mx-auto" />
+          <p className="mt-3 text-sm text-[var(--tg-theme-hint-color)]">Загрузка...</p>
         </div>
       </div>
     );
@@ -126,7 +103,7 @@ export default function ShowcaseDetailPage({
 
   if (!showcase) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center min-h-screen bg-[var(--tg-theme-bg-color)]">
         <p className="text-[var(--tg-theme-hint-color)]">Витрина не найдена</p>
       </div>
     );
@@ -134,30 +111,30 @@ export default function ShowcaseDetailPage({
 
   return (
     <div className="min-h-screen bg-[var(--tg-theme-bg-color)]">
-      <div className="sticky top-0 bg-[var(--tg-theme-header-bg-color)] border-b border-[var(--tg-theme-secondary-bg-color)] z-10">
-        <div className="px-4 py-3">
-          <h1 className="text-xl font-semibold text-[var(--tg-theme-text-color)]">
+      <div className="sticky top-0 bg-[var(--tg-theme-bg-color)] z-10 tg-header-padding">
+        <div className="px-4 pb-3 pt-3 border-b border-[var(--tg-theme-secondary-bg-color)]">
+          <h1 className="text-lg font-semibold text-[var(--tg-theme-text-color)]">
             {showcase.name}
           </h1>
         </div>
 
-        <div className="flex border-b border-[var(--tg-theme-secondary-bg-color)]">
+        <div className="flex">
           <button
             onClick={() => setActiveTab("topics")}
-            className={`flex-1 px-4 py-3 font-medium transition-colors ${
+            className={`flex-1 py-2.5 text-sm font-medium transition-colors border-b-2 ${
               activeTab === "topics"
-                ? "text-[var(--tg-theme-button-color)] border-b-2 border-[var(--tg-theme-button-color)]"
-                : "text-[var(--tg-theme-hint-color)]"
+                ? "text-[var(--tg-theme-button-color)] border-[var(--tg-theme-button-color)]"
+                : "text-[var(--tg-theme-hint-color)] border-transparent"
             }`}
           >
             Контент
           </button>
           <button
             onClick={() => setActiveTab("settings")}
-            className={`flex-1 px-4 py-3 font-medium transition-colors ${
+            className={`flex-1 py-2.5 text-sm font-medium transition-colors border-b-2 ${
               activeTab === "settings"
-                ? "text-[var(--tg-theme-button-color)] border-b-2 border-[var(--tg-theme-button-color)]"
-                : "text-[var(--tg-theme-hint-color)]"
+                ? "text-[var(--tg-theme-button-color)] border-[var(--tg-theme-button-color)]"
+                : "text-[var(--tg-theme-hint-color)] border-transparent"
             }`}
           >
             Настройки
@@ -170,70 +147,46 @@ export default function ShowcaseDetailPage({
           <div>
             {topics.length === 0 ? (
               <div className="text-center py-12">
-                <p className="text-[var(--tg-theme-hint-color)] mb-6">
-                  Нет топиков
-                </p>
+                <p className="text-[var(--tg-theme-hint-color)] text-sm mb-4">Нет топиков</p>
                 <Link
                   href={`/showcase/${showcaseId}/topic/create`}
-                  className="inline-block bg-[var(--tg-theme-button-color)] text-[var(--tg-theme-button-text-color)] font-semibold py-2 px-6 rounded-lg hover:opacity-90 transition-opacity"
+                  className="inline-flex items-center gap-2 bg-[var(--tg-theme-button-color)] text-[var(--tg-theme-button-text-color)] font-medium py-2.5 px-5 rounded-xl text-sm active:opacity-70"
                 >
                   Создать топик
                 </Link>
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-2">
                 {topics.map((topic) => (
                   <Link
                     key={topic.id}
                     href={`/showcase/${showcaseId}/topic/${topic.id}`}
-                    className="block bg-[var(--tg-theme-section-bg-color)] rounded-xl p-4"
+                    className="flex items-center justify-between bg-[var(--tg-theme-section-bg-color)] rounded-xl p-3 active:opacity-70"
                   >
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-[var(--tg-theme-text-color)]">
-                          {topic.title}
-                        </h3>
-                        <p className="text-sm text-[var(--tg-theme-hint-color)] mt-1">
-                          {topic._count?.categories || 0} категорий
-                        </p>
-                      </div>
-                      <svg
-                        className="w-5 h-5 text-[var(--tg-theme-hint-color)]"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M9 5l7 7-7 7"
-                        />
-                      </svg>
+                    <div>
+                      <h3 className="font-medium text-[var(--tg-theme-text-color)]">
+                        {topic.title}
+                      </h3>
+                      <p className="text-xs text-[var(--tg-theme-hint-color)] mt-0.5">
+                        {showcase.categoriesEnabled
+                          ? `${topic._count?.categories || 0} категорий`
+                          : `${topic._count?.products || 0} продуктов`}
+                      </p>
                     </div>
+                    <svg className="w-4 h-4 text-[var(--tg-theme-hint-color)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
                   </Link>
                 ))}
 
                 <Link
                   href={`/showcase/${showcaseId}/topic/create`}
-                  className="block bg-[var(--tg-theme-button-color)]/10 border-2 border-dashed border-[var(--tg-theme-button-color)] rounded-xl p-4"
+                  className="flex items-center justify-center gap-2 py-3 bg-[var(--tg-theme-button-color)]/10 border border-dashed border-[var(--tg-theme-button-color)] rounded-xl text-[var(--tg-theme-button-color)] font-medium text-sm active:opacity-70"
                 >
-                  <div className="flex items-center justify-center gap-2 text-[var(--tg-theme-button-color)] font-medium">
-                    <svg
-                      className="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 4v16m8-8H4"
-                      />
-                    </svg>
-                    Добавить топик
-                  </div>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                  Добавить топик
                 </Link>
               </div>
             )}
@@ -241,57 +194,39 @@ export default function ShowcaseDetailPage({
         ) : (
           <div className="space-y-3">
             <div className="bg-[var(--tg-theme-section-bg-color)] rounded-xl p-4">
-              <div className="flex items-center gap-4 mb-4">
+              <div className="flex items-center gap-3 mb-3">
                 <div
-                  className="w-16 h-16 rounded-xl flex items-center justify-center flex-shrink-0"
+                  className="w-12 h-12 rounded-xl flex items-center justify-center"
                   style={{ backgroundColor: showcase.primaryColor }}
                 >
                   {showcase.logoUrl ? (
-                    <img
-                      src={showcase.logoUrl}
-                      alt={showcase.name}
-                      className="w-10 h-10 object-contain"
-                    />
+                    <img src={showcase.logoUrl} alt={showcase.name} className="w-8 h-8 object-contain" />
                   ) : (
-                    <span className="text-white text-2xl font-bold">
-                      {showcase.name.charAt(0)}
-                    </span>
+                    <span className="text-white text-xl font-semibold">{showcase.name.charAt(0)}</span>
                   )}
                 </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-[var(--tg-theme-text-color)]">
-                    {showcase.name}
-                  </h3>
-                  <p className="text-sm text-[var(--tg-theme-hint-color)]">
-                    @{showcase.uniqueName}
-                  </p>
+                <div>
+                  <h3 className="font-medium text-[var(--tg-theme-text-color)]">{showcase.name}</h3>
+                  <p className="text-xs text-[var(--tg-theme-hint-color)]">@{showcase.uniqueName}</p>
                 </div>
               </div>
 
               {showcase.description && (
-                <p className="text-sm text-[var(--tg-theme-text-color)] mb-4">
-                  {showcase.description}
-                </p>
+                <p className="text-sm text-[var(--tg-theme-text-color)] mb-3">{showcase.description}</p>
               )}
 
-              <div className="grid grid-cols-2 gap-2 text-sm">
-                <div className="bg-[var(--tg-theme-bg-color)] rounded-lg p-3">
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <div className="bg-[var(--tg-theme-bg-color)] rounded-lg p-2.5">
                   <p className="text-[var(--tg-theme-hint-color)]">Шаблон</p>
                   <p className="font-medium text-[var(--tg-theme-text-color)]">
                     {showcase.template === "BANK" ? "Банк" : "Магазин"}
                   </p>
                 </div>
-                <div className="bg-[var(--tg-theme-bg-color)] rounded-lg p-3">
-                  <p className="text-[var(--tg-theme-hint-color)]">Цвет</p>
-                  <div className="flex items-center gap-2 mt-1">
-                    <div
-                      className="w-4 h-4 rounded"
-                      style={{ backgroundColor: showcase.primaryColor }}
-                    />
-                    <p className="font-medium text-[var(--tg-theme-text-color)] text-xs">
-                      {showcase.primaryColor}
-                    </p>
-                  </div>
+                <div className="bg-[var(--tg-theme-bg-color)] rounded-lg p-2.5">
+                  <p className="text-[var(--tg-theme-hint-color)]">Структура</p>
+                  <p className="font-medium text-[var(--tg-theme-text-color)]">
+                    {showcase.categoriesEnabled ? "С категориями" : "Без категорий"}
+                  </p>
                 </div>
               </div>
             </div>
@@ -299,22 +234,22 @@ export default function ShowcaseDetailPage({
             {showcaseDomain && (
               <button
                 onClick={handleCopyShowcaseLink}
-                className="w-full bg-[var(--tg-theme-button-color)] text-[var(--tg-theme-button-text-color)] text-center font-semibold py-3 px-6 rounded-xl hover:opacity-90 transition-opacity"
+                className="w-full py-3 bg-[var(--tg-theme-button-color)] text-[var(--tg-theme-button-text-color)] font-medium rounded-xl text-sm active:opacity-70"
               >
-                📋 Скопировать ссылку на витрину
+                📋 Скопировать ссылку
               </button>
             )}
 
             <Link
               href={`/showcase/${showcaseId}/edit`}
-              className="block bg-[var(--tg-theme-section-bg-color)] text-[var(--tg-theme-text-color)] text-center font-semibold py-3 px-6 rounded-xl hover:opacity-80 transition-opacity border border-[var(--tg-theme-secondary-bg-color)]"
+              className="block w-full py-3 bg-[var(--tg-theme-section-bg-color)] text-[var(--tg-theme-text-color)] text-center font-medium rounded-xl text-sm active:opacity-70"
             >
-              ✏️ Редактировать витрину
+              ✏️ Редактировать
             </Link>
 
             <button
               onClick={handleDeleteShowcase}
-              className="w-full bg-[var(--tg-theme-destructive-text-color)]/10 text-[var(--tg-theme-destructive-text-color)] font-semibold py-3 px-6 rounded-xl hover:bg-[var(--tg-theme-destructive-text-color)]/20 transition-colors"
+              className="w-full py-3 bg-[var(--tg-theme-destructive-text-color)]/10 text-[var(--tg-theme-destructive-text-color)] font-medium rounded-xl text-sm active:opacity-70"
             >
               Удалить витрину
             </button>

@@ -64,35 +64,7 @@ export default function TelegramProvider({
         }
 
         setWebApp(twa);
-
-        try {
-          // Инициализация Telegram WebApp
-          twa.ready();
-          twa.expand();
-
-          // Настройка цветовой схемы
-          if (twa.colorScheme === "dark") {
-            document.documentElement.style.setProperty(
-              "--tg-theme-bg-color",
-              "#18222d"
-            );
-            document.documentElement.style.setProperty(
-              "--tg-theme-text-color",
-              "#ffffff"
-            );
-            document.documentElement.style.setProperty(
-              "--tg-theme-secondary-bg-color",
-              "#1f2b38"
-            );
-            document.documentElement.style.setProperty(
-              "--tg-theme-section-bg-color",
-              "#232e3c"
-            );
-          }
-        } catch (error) {
-          console.error("Error initializing Telegram WebApp:", error);
-        }
-
+        // Тема применяется в TelegramThemeProvider
         setIsReady(true);
       })
       .catch((error) => {

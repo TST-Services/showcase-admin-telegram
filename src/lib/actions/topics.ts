@@ -63,15 +63,26 @@ export async function updateTopic(
 
 export async function getTopicCategories(topicId: string) {
   try {
-    console.log("Fetching categories for topic:", topicId);
     const categories = await prisma.showcaseCategory.findMany({
       where: { topicId },
       orderBy: { title: "asc" },
     });
-    console.log("Found categories:", categories.length);
     return categories;
   } catch (error) {
     console.error("Error fetching categories:", error);
+    throw error;
+  }
+}
+
+export async function getTopicProducts(topicId: string) {
+  try {
+    const products = await prisma.showcaseProduct.findMany({
+      where: { topicId },
+      orderBy: { createdAt: "desc" },
+    });
+    return products;
+  } catch (error) {
+    console.error("Error fetching topic products:", error);
     throw error;
   }
 }

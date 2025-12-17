@@ -1,19 +1,18 @@
 import type { Metadata, Viewport } from "next";
 import "@/index.css";
+import TelegramThemeProvider from "@/components/providers/TelegramThemeProvider";
 
-// eslint-disable-next-line react-refresh/only-export-components
 export const metadata: Metadata = {
   title: "Banki Showcase Admin",
   description: "Админка для онлайн витрин",
 };
 
-// eslint-disable-next-line react-refresh/only-export-components
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  viewportFit: "cover", // Важно для safe area
+  viewportFit: "cover",
 };
 
 export default function RootLayout({
@@ -23,7 +22,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ru">
-      <body>{children}</body>
+      <body>
+        <TelegramThemeProvider />
+        {children}
+      </body>
     </html>
   );
 }

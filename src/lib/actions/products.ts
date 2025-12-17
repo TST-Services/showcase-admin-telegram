@@ -89,7 +89,7 @@ export async function deleteProduct(id: string) {
   try {
     const product = await prisma.showcaseProduct.findUnique({
       where: { id },
-      select: { categoryId: true },
+      select: { categoryId: true, topicId: true },
     });
 
     await prisma.showcaseProduct.delete({
@@ -99,9 +99,41 @@ export async function deleteProduct(id: string) {
     if (product?.categoryId) {
       revalidatePath(`/category/${product.categoryId}`);
     }
+    if (product?.topicId) {
+      revalidatePath(`/topic/${product.topicId}`);
+    }
     return { success: true };
   } catch (error) {
     console.error("Error deleting product:", error);
     return { success: false, error: "Failed to delete product" };
+  }
+}
+
+export async function createProductForTopic(
+  showcaseId: string,
+  topicId: string,
+  data: {
+    title: string;
+    description?: string;
+    iconUrl?: string;
+    buttonUrl?: string;
+  }
+) {
+  try {
+    const product = await prisma.showcaseProduct.create({
+      data: {
+        title: data.title,
+        description: data.description || "",
+        icon: data.iconUrl || "",
+        link: data.buttonUrl || "",
+        topicId,
+        showcaseId,
+      },
+    });
+    revalidatePath(`/topic/${topicId}`);
+    return { success: true, product };
+  } catch (error) {
+    console.error("Error creating product for topic:", error);
+    return { success: false, error: "Failed to create product" };
   }
 }

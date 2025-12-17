@@ -25,15 +25,16 @@ enum ShowcaseTemplate {
 }
 
 model Showcase {
-  id           String            @id @default(uuid()) @db.Uuid
-  name         String            @db.VarChar(200)
-  uniqueName   String            @unique @map("unique_name") @db.VarChar(100)
-  description  String?           @db.Text
-  template     ShowcaseTemplate  @default(BANK)
-  primaryColor String            @map("primary_color") @db.VarChar(7)
-  logoUrl      String            @map("logo_url") @db.VarChar(500)
-  createdAt    DateTime          @default(now()) @map("created_at")
-  updatedAt    DateTime          @updatedAt @map("updated_at")
+  id                String            @id @default(uuid()) @db.Uuid
+  name              String            @db.VarChar(200)
+  uniqueName        String            @unique @map("unique_name") @db.VarChar(100)
+  description       String?           @db.Text
+  template          ShowcaseTemplate  @default(BANK)
+  primaryColor      String            @map("primary_color") @db.VarChar(7)
+  logoUrl           String            @map("logo_url") @db.VarChar(500)
+  categoriesEnabled Boolean           @default(true) @map("categories_enabled")
+  createdAt         DateTime          @default(now()) @map("created_at")
+  updatedAt         DateTime          @updatedAt @map("updated_at")
 
   // Связи
   products ShowcaseProduct[]
@@ -51,6 +52,7 @@ model ShowcaseTopic {
   // Связи
   showcase   Showcase  @relation(fields: [showcaseId], references: [id], onDelete: Cascade)
   categories ShowcaseCategory[]
+  products   ShowcaseProduct[]
 
   @@index([showcaseId])
   @@unique([showcaseId, title], map: "showcaseTopic_showcaseId_title")
@@ -77,7 +79,8 @@ model ShowcaseCategory {
 model ShowcaseProduct {
   id          String   @id @default(uuid()) @db.Uuid
   showcaseId  String   @map("showcase_id") @db.Uuid
-  categoryId  String   @map("category_id") @db.Uuid
+  categoryId  String?  @map("category_id") @db.Uuid
+  topicId     String?  @map("topic_id") @db.Uuid
   title       String   @db.VarChar(200)
   description String   @db.Text
   icon        String   @db.VarChar(500)
@@ -86,11 +89,13 @@ model ShowcaseProduct {
   updatedAt   DateTime @updatedAt @map("updated_at")
 
   // Связи
-  showcase Showcase        @relation(fields: [showcaseId], references: [id], onDelete: Cascade)
-  category ShowcaseCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  showcase Showcase          @relation(fields: [showcaseId], references: [id], onDelete: Cascade)
+  category ShowcaseCategory? @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  topic    ShowcaseTopic?    @relation(fields: [topicId], references: [id], onDelete: Cascade)
 
   @@index([showcaseId])
   @@index([categoryId])
+  @@index([topicId])
   @@unique([showcaseId, title], map: "showcaseProduct_showcaseId_title")
   @@map("showcase_products")
 }

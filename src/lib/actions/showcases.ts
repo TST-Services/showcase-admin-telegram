@@ -34,10 +34,14 @@ export async function createShowcase(data: {
   template: "BANK" | "SHOP";
   primaryColor: string;
   logoUrl: string;
+  categoriesEnabled?: boolean;
 }) {
   try {
     const showcase = await prisma.showcase.create({
-      data,
+      data: {
+        ...data,
+        categoriesEnabled: data.categoriesEnabled ?? true,
+      },
     });
     revalidatePath("/");
     return { success: true, showcase };
@@ -67,6 +71,7 @@ export async function updateShowcase(
     template: "BANK" | "SHOP";
     primaryColor: string;
     logoUrl: string;
+    categoriesEnabled?: boolean;
   }
 ) {
   try {
@@ -79,6 +84,7 @@ export async function updateShowcase(
         template: data.template,
         primaryColor: data.primaryColor,
         logoUrl: data.logoUrl,
+        categoriesEnabled: data.categoriesEnabled ?? true,
       },
     });
     revalidatePath(`/showcase/${id}`);
@@ -107,9 +113,10 @@ export async function getShowcaseTopics(showcaseId: string) {
   try {
     const topics = await prisma.showcaseTopic.findMany({
       where: { showcaseId },
+      orderBy: { priority: "desc" },
       include: {
         _count: {
-          select: { categories: true },
+          select: { categories: true, products: true },
         },
       },
     });
