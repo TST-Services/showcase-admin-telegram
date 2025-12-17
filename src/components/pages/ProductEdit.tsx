@@ -23,6 +23,7 @@ export default function ProductEditForm({
     description: "",
     iconUrl: "",
     buttonUrl: "",
+    backgroundColor: "",
   });
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
@@ -42,6 +43,7 @@ export default function ProductEditForm({
         description: product.description || "",
         iconUrl: product.icon || "",
         buttonUrl: product.link || "",
+        backgroundColor: product.backgroundColor || "",
       });
     } catch {
       const { default: WebApp } = await import("@twa-dev/sdk");
@@ -132,6 +134,34 @@ export default function ProductEditForm({
             onChange={(e) => setFormData({ ...formData, buttonUrl: e.target.value })}
             className="w-full bg-[var(--tg-theme-bg-color)] text-[var(--tg-theme-text-color)] px-3 py-2 rounded-lg text-sm focus:outline-none"
           />
+        </div>
+
+        <div className="bg-[var(--tg-theme-section-bg-color)] rounded-xl p-3">
+          <label className="block text-xs text-[var(--tg-theme-hint-color)] mb-2">Цвет фона</label>
+          <div className="flex gap-2 items-center">
+            <input
+              type="color"
+              value={formData.backgroundColor || "#ffffff"}
+              onChange={(e) => setFormData({ ...formData, backgroundColor: e.target.value })}
+              className="w-10 h-10 rounded-lg cursor-pointer border-0"
+            />
+            <input
+              type="text"
+              value={formData.backgroundColor}
+              onChange={(e) => setFormData({ ...formData, backgroundColor: e.target.value })}
+              placeholder="#ffffff"
+              className="flex-1 bg-[var(--tg-theme-bg-color)] text-[var(--tg-theme-text-color)] px-3 py-2 rounded-lg text-sm focus:outline-none"
+            />
+            {formData.backgroundColor && (
+              <button
+                type="button"
+                onClick={() => setFormData({ ...formData, backgroundColor: "" })}
+                className="text-[var(--tg-theme-hint-color)] text-xs"
+              >
+                Сбросить
+              </button>
+            )}
+          </div>
         </div>
 
         <button

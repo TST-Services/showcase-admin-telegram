@@ -27,6 +27,7 @@ export async function createProduct(
     description?: string;
     iconUrl?: string;
     buttonUrl?: string;
+    backgroundColor?: string;
   }
 ) {
   try {
@@ -46,6 +47,7 @@ export async function createProduct(
         description: data.description || "",
         icon: data.iconUrl || "",
         link: data.buttonUrl || "",
+        backgroundColor: data.backgroundColor || null,
         categoryId,
         showcaseId: category.topic.showcaseId,
       },
@@ -54,6 +56,17 @@ export async function createProduct(
     return { success: true, product };
   } catch (error) {
     console.error("Error creating product:", error);
+    if (
+      error &&
+      typeof error === "object" &&
+      "code" in error &&
+      error.code === "P2002"
+    ) {
+      return {
+        success: false,
+        error: "Продукт с таким названием уже существует",
+      };
+    }
     return { success: false, error: "Failed to create product" };
   }
 }
@@ -65,6 +78,7 @@ export async function updateProduct(
     description?: string;
     iconUrl?: string;
     buttonUrl?: string;
+    backgroundColor?: string;
   }
 ) {
   try {
@@ -75,6 +89,7 @@ export async function updateProduct(
         description: data.description || "",
         icon: data.iconUrl || "",
         link: data.buttonUrl || "",
+        backgroundColor: data.backgroundColor || null,
       },
     });
     revalidatePath(`/category/${product.categoryId}`);
@@ -117,6 +132,7 @@ export async function createProductForTopic(
     description?: string;
     iconUrl?: string;
     buttonUrl?: string;
+    backgroundColor?: string;
   }
 ) {
   try {
@@ -126,6 +142,7 @@ export async function createProductForTopic(
         description: data.description || "",
         icon: data.iconUrl || "",
         link: data.buttonUrl || "",
+        backgroundColor: data.backgroundColor || null,
         topicId,
         showcaseId,
       },
@@ -134,6 +151,17 @@ export async function createProductForTopic(
     return { success: true, product };
   } catch (error) {
     console.error("Error creating product for topic:", error);
+    if (
+      error &&
+      typeof error === "object" &&
+      "code" in error &&
+      error.code === "P2002"
+    ) {
+      return {
+        success: false,
+        error: "Продукт с таким названием уже существует",
+      };
+    }
     return { success: false, error: "Failed to create product" };
   }
 }

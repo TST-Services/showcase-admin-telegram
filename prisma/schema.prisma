@@ -77,16 +77,17 @@ model ShowcaseCategory {
 }
 
 model ShowcaseProduct {
-  id          String   @id @default(uuid()) @db.Uuid
-  showcaseId  String   @map("showcase_id") @db.Uuid
-  categoryId  String?  @map("category_id") @db.Uuid
-  topicId     String?  @map("topic_id") @db.Uuid
-  title       String   @db.VarChar(200)
-  description String   @db.Text
-  icon        String   @db.VarChar(500)
-  link        String   @db.VarChar(500)
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  id              String   @id @default(uuid()) @db.Uuid
+  showcaseId      String   @map("showcase_id") @db.Uuid
+  categoryId      String?  @map("category_id") @db.Uuid
+  topicId         String?  @map("topic_id") @db.Uuid
+  title           String   @db.VarChar(200)
+  description     String   @db.Text
+  icon            String   @db.VarChar(500)
+  link            String   @db.VarChar(500)
+  backgroundColor String?  @map("background_color") @db.VarChar(7)
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
 
   // Связи
   showcase Showcase          @relation(fields: [showcaseId], references: [id], onDelete: Cascade)
