@@ -6,7 +6,7 @@ import tseslint from 'typescript-eslint'
 import { defineConfig, globalIgnores } from 'eslint/config'
 
 export default defineConfig([
-  globalIgnores(['dist']),
+  globalIgnores(['dist', '.next']),
   {
     files: ['**/*.{ts,tsx}'],
     extends: [
@@ -18,6 +18,13 @@ export default defineConfig([
     languageOptions: {
       ecmaVersion: 2020,
       globals: globals.browser,
+    },
+    rules: {
+      // Next.js layout/page files export metadata and viewport alongside components
+      'react-refresh/only-export-components': [
+        'warn',
+        { allowExportNames: ['metadata', 'viewport', 'generateMetadata', 'generateViewport'] },
+      ],
     },
   },
 ])
