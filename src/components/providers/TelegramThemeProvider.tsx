@@ -64,21 +64,15 @@ export default function TelegramThemeProvider() {
         // Подписываемся на все релевантные события
         twa.onEvent("themeChanged", applyTheme);
         twa.onEvent("viewportChanged", applyTheme);
-        // @ts-expect-error - fullscreenChanged может быть недоступен в старых версиях
         twa.onEvent("fullscreenChanged", applyTheme);
-        // @ts-expect-error - safeAreaChanged может быть недоступен
         twa.onEvent("safeAreaChanged", applyTheme);
-        // @ts-expect-error - contentSafeAreaChanged может быть недоступен
         twa.onEvent("contentSafeAreaChanged", applyTheme);
 
         return () => {
           twa.offEvent("themeChanged", applyTheme);
           twa.offEvent("viewportChanged", applyTheme);
-          // @ts-expect-error
           twa.offEvent("fullscreenChanged", applyTheme);
-          // @ts-expect-error
           twa.offEvent("safeAreaChanged", applyTheme);
-          // @ts-expect-error
           twa.offEvent("contentSafeAreaChanged", applyTheme);
         };
       } catch (error) {

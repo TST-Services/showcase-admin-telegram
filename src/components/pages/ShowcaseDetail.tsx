@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { getShowcase, getShowcaseTopics, deleteShowcase } from "@/lib/actions/showcases";
@@ -36,11 +36,7 @@ export default function ShowcaseDetailPage({ showcaseId }: { showcaseId: string 
 
   useTelegramBackButton("/");
 
-  useEffect(() => {
-    loadData();
-  }, [showcaseId]);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       const [showcaseData, topicsData] = await Promise.all([
         getShowcase(showcaseId),
@@ -59,7 +55,11 @@ export default function ShowcaseDetailPage({ showcaseId }: { showcaseId: string 
     } finally {
       setLoading(false);
     }
-  };
+  }, [showcaseId]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const handleCopyShowcaseLink = async () => {
     if (!showcase || !showcaseDomain) return;
