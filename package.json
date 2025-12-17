@@ -14,7 +14,7 @@
   "dependencies": {
     "@prisma/client": "^6.17.1",
     "@twa-dev/sdk": "^8.0.2",
-    "next": "^15.1.6",
+    "next": "15.1.11",
     "react": "^19.1.1",
     "react-dom": "^19.1.1"
   },
