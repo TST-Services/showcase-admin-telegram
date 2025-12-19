@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { ImageUploadService } from "@/lib/services/imgbb";
 
 interface ImageUploadProps {
   value?: string;
@@ -31,17 +30,18 @@ export default function ImageUpload({
     };
     reader.readAsDataURL(file);
 
-    // Загружаем на ImgBB
+    // Загружаем через API в S3
     setUploading(true);
     try {
-      const apiKey = process.env.NEXT_PUBLIC_IMGBB_API_KEY;
-      if (!apiKey) {
-        alert("IMGBB_API_KEY не настроен");
-        return;
-      }
+      const formData = new FormData();
+      formData.append("file", file);
 
-      const uploadService = new ImageUploadService(apiKey);
-      const result = await uploadService.uploadImage(file);
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      const result = await response.json();
 
       if (result.success && result.url) {
         onChange(result.url);
@@ -125,7 +125,7 @@ export default function ImageUpload({
               {uploading ? "Загрузка..." : "Нажмите для загрузки изображения"}
             </p>
             <p className="text-xs text-[var(--tg-theme-hint-color)] mt-1">
-              PNG, JPG, GIF до 32MB
+              PNG, JPG, GIF до 10MB
             </p>
           </div>
         </button>
